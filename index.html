@@ -15,38 +15,68 @@
                 <h1>GrooveGraph</h1>
             </div>
             <div class="auth">
-                <button id="loginButton">Login with Spotify</button>
+                <button id="loginButton" class="login-button">
+                    <svg class="spotify-icon" viewBox="0 0 24 24">
+                        <path
+                            d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.371-.721.49-1.101.241-3.021-1.85-6.82-2.27-11.3-1.24-.418.1-.851-.16-.95-.57-.101-.421.159-.841.579-.941 4.91-1.121 9.021-.67 12.439 1.439.39.241.5.721.271 1.101zm1.47-3.27c-.301.45-.9.6-1.35.3-3.459-2.13-8.729-2.74-12.818-1.5-.51.15-1.05-.15-1.2-.66-.15-.51.15-1.05.66-1.2 4.67-1.41 10.47-.72 14.459 1.71.45.3.6.9.3 1.35zm.127-3.401c-4.15-2.461-11-.67-15.001 1.38-.619.3-1.359.06-1.659-.57-.3-.629-.061-1.359.57-1.659 4.589-2.28 12.239-1.839 17.099 1.1.6.359.779 1.14.421 1.739-.36.601-1.14.78-1.74.421z" />
+                    </svg>
+                    Login with Spotify
+                </button>
+                <div id="user-profile" class="user-profile hidden">
+                    <img id="profile-image" alt="Profile" class="profile-image">
+                    <span id="profile-name"></span>
+                </div>
             </div>
         </header>
 
         <div class="main-content">
             <aside class="sidebar">
-                <ul>
-                    <li><a href="#">Top Tracks</a></li>
-                    <li><a href="#">Top Artists</a></li>
-                    <li><a href="#">Top Genres</a></li>
-                </ul>
+                <div class="time-range">
+                    <select id="time-range-select">
+                        <option value="short_term">Last 4 Weeks</option>
+                        <option value="medium_term">Last 6 Months</option>
+                        <option value="long_term">All Time</option>
+                    </select>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="#top-tracks" class="active">Top Tracks</a></li>
+                        <li><a href="#top-artists">Top Artists</a></li>
+                        <li><a href="#top-genres">Top Genres</a></li>
+                    </ul>
+                </nav>
             </aside>
 
-            <section class="dashboard">
-                <h2>Welcome to GrooveGraph</h2>
-                <p>Your personalized music dashboard</p>
-
-                <div id="top-tracks" class="data-section">
-                    <h3>Top Tracks (Last 4 Weeks)</h3>
-                    <div id="tracks-chart"></div>
+            <main class="dashboard">
+                <div id="welcome-screen" class="welcome-screen">
+                    <h2>Welcome to GrooveGraph</h2>
+                    <p>Your personalized music dashboard</p>
                 </div>
 
-                <div id="top-artists" class="data-section">
-                    <h3>Top Artists (All Time)</h3>
-                    <div id="artists-chart"></div>
+                <div id="error-message" class="error-message hidden"></div>
+
+                <div id="loading" class="loading hidden">
+                    <div class="spinner"></div>
+                    <p>Loading your music data...</p>
                 </div>
 
-                <div id="top-genres" class="data-section">
-                    <h3>Top Genres (Last 6 Months)</h3>
-                    <div id="genres-chart"></div>
+                <div id="data-container" class="data-container hidden">
+                    <section id="top-tracks" class="data-section">
+                        <h3>Your Top Tracks</h3>
+                        <div id="tracks-chart" class="chart"></div>
+                    </section>
+
+                    <section id="top-artists" class="data-section">
+                        <h3>Your Top Artists</h3>
+                        <div id="artists-chart" class="chart"></div>
+                    </section>
+
+                    <section id="top-genres" class="data-section">
+                        <h3>Your Top Genres</h3>
+                        <div id="genres-chart" class="chart"></div>
+                    </section>
                 </div>
-            </section>
+            </main>
         </div>
     </div>
 

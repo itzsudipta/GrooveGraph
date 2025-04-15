@@ -1,7 +1,10 @@
 const SPOTIFY_CONFIG = {
     clientId: 'c3c6f141c28441f9bdd0988863be0d92',
-    redirectUri: 'https://itzsudipta.github.io/GrooveGraph/callback.html', // Remove encodeURIComponent
+    clientSecret: process.env.SPOTIFY_CLIENT_SECRET || '', // Add your client secret in .env
+    redirectUri: 'https://itzsudipta.github.io/GrooveGraph/callback.html',
+    homePageUrl: 'https://itzsudipta.github.io/GrooveGraph/',
     authEndpoint: 'https://accounts.spotify.com/authorize',
+    tokenEndpoint: 'https://accounts.spotify.com/api/token',
     apiEndpoint: 'https://api.spotify.com/v1',
     scopes: [
         'user-top-read',
@@ -56,7 +59,7 @@ class SpotifyAuth {
 
     async exchangeCodeForToken(code) {
         try {
-            const response = await fetch('https://accounts.spotify.com/api/token', {
+            const response = await fetch(this.config.tokenEndpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -65,23 +68,28 @@ class SpotifyAuth {
                 body: new URLSearchParams({
                     grant_type: 'authorization_code',
                     code: code,
-                    redirect_uri: this.config.redirectUri,
-                    client_id: this.config.clientId
+                    redirect_uri: this.config.redirectUri
                 })
             });
 
-            if (!response.ok) throw new Error('Token exchange failed');
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`Token exchange failed: ${errorData.error}`);
+            }
 
             const data = await response.json();
-            sessionStorage.setItem('spotify_access_token', data.access_token);
-            sessionStorage.setItem('spotify_refresh_token', data.refresh_token);
-
-            // Change this line to redirect to your actual homepage URL
-            window.location.href = 'https://itzsudipta.github.io/GrooveGraph/';
+            this.saveTokenData(data);
+            window.location.href = this.config.homePageUrl;
         } catch (error) {
             console.error('Token exchange error:', error);
             this.handleError('Authentication failed');
         }
+    }
+
+    saveTokenData(data) {
+        sessionStorage.setItem('spotify_access_token', data.access_token);
+        sessionStorage.setItem('spotify_refresh_token', data.refresh_token);
+        sessionStorage.setItem('spotify_token_expiry', Date.now() + (data.expires_in * 1000));
     }
 
     handleError(message) {
@@ -126,15 +134,17 @@ class DataVisualizer {
         }
 
         try {
-            // Implementation will be added in next iteration
             this.chartElement.innerHTML = `
                 <div class="tracks-container">
                     <h2>Your Top Tracks</h2>
                     <div class="tracks-list">
                         ${tracks.map(track => `
                             <div class="track-item">
-                                <span>${track.name}</span>
-                                <span>${track.artists[0].name}</span>
+                                <img src="${track.album.images[2].url}" alt="${track.name}" />
+                                <div class="track-info">
+                                    <span class="track-name">${track.name}</span>
+                                    <span class="artist-name">${track.artists[0].name}</span>
+                                </div>
                             </div>
                         `).join('')}
                     </div>

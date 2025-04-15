@@ -1,9 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>GrooveGraph - Authentication</title>
+    <meta charset="UTF-8">
+    <title>Authenticating... - GrooveGraph</title>
+    <script src="script.js"></script>
+    <style>
+        .loading {
+            text-align: center;
+            margin-top: 50px;
+            font-family: Arial, sans-serif;
+        }
+    </style>
 </head>
 <body>
+    <div class="loading">
+        <h2>Completing authentication...</h2>
+        <div id="error-message" style="display: none; color: red;"></div>
+    </div>
     <script>
         const params = new URLSearchParams(window.location.search);
         const code = params.get('code');
@@ -15,7 +28,8 @@
             window.location.href = '/';
         } else {
             // Handle error
-            document.body.innerHTML = 'Authentication failed. Please try again.';
+            document.getElementById('error-message').style.display = 'block';
+            document.getElementById('error-message').innerHTML = 'Authentication failed. Please try again.';
         }
     </script>
 </body>
