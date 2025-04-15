@@ -1,7 +1,7 @@
 // JavaScript for Login Button and Fetching Data from Spotify
 
 document.getElementById("loginButton").addEventListener("click", function () {
-    const client_id = "YOUR_SPOTIFY_CLIENT_ID"; // Your Spotify Client ID
+    const client_id = "c3c6f141c28441f9bdd0988863be0d92"; // Your Spotify Client ID
     const redirect_uri = "https://itzsudipta.github.io/GrooveGraph/callback.html"; // Updated Redirect URI to GitHub Pages
     const scope = "user-top-read";
     const response_type = "code";
