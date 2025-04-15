@@ -2,25 +2,24 @@
 <html>
 
 <head>
-    <title>Spotify Callback</title>
-    <script>
-            window.onload = () => {
-                const hash = window.location.hash.substring(1);
-                const params = new URLSearchParams(hash);
-                const accessToken = params.get('access_token');
-
-            if (accessToken) {
-                localStorage.setItem('access_token', accessToken);
-                window.location.href = 'index.html'; // or wherever your dashboard is
-            } else {
-                document.body.innerText = 'Authorization failed. Please try again.';
-            }
-        };
-    </script>
+    <title>GrooveGraph - Authentication</title>
 </head>
 
 <body>
-    <p>Redirecting...</p>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get('code');
+        const state = params.get('state');
+
+        if (code && state === sessionStorage.getItem('spotify_auth_state')) {
+            // Store the code and redirect to main app
+            sessionStorage.setItem('spotify_auth_code', code);
+            window.location.href = '/';
+        } else {
+            // Handle error
+            document.body.innerHTML = 'Authentication failed. Please try again.';
+        }
+    </script>
 </body>
 
 </html>
