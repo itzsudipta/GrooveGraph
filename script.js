@@ -1,5 +1,5 @@
 const SPOTIFY_CONFIG = {
-    clientId: process.env.SPOTIFY_CLIENT_ID,
+    clientId: "c3c6f141c28441f9bdd0988863be0d92", // Replace with your actual Spotify Client ID
     redirectUri: 'https://itzsudipta.github.io/GrooveGraph/callback.html',
     scopes: ['user-top-read', 'user-read-recently-played'],
     authEndpoint: 'https://accounts.spotify.com/authorize'
@@ -21,7 +21,7 @@ class SpotifyAuth {
 
             const params = new URLSearchParams({
                 client_id: this.config.clientId,
-                response_type: 'code',
+                response_type: 'token', // <- Changed here
                 redirect_uri: this.config.redirectUri,
                 scope: this.config.scopes.join(' '),
                 state: state
@@ -71,7 +71,7 @@ class DataVisualizer {
         if (!this.chartElement) return;
 
         try {
-            // Implementation for displaying tracks will go here
+            // Placeholder: You can add chart logic here
             this.chartElement.innerHTML = 'Top tracks data will be displayed here.';
         } catch (error) {
             this.displayError('Failed to display tracks data');
@@ -107,8 +107,7 @@ async function fetchTopTracks() {
 
         dataVisualizer.showLoading();
 
-        // Implement actual API call here
-        // For now, using setTimeout to simulate API call
+        // Simulated API call (replace with actual fetch)
         setTimeout(() => {
             dataVisualizer.displayTopTracks([]);
         }, 2000);
