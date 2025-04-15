@@ -1,7 +1,7 @@
 // Update the SPOTIFY_CONFIG and SpotifyAuth class implementation
 
 const SPOTIFY_CONFIG = {
-    clientId: 'YOUR_SPOTIFY_CLIENT_ID',
+    clientId: 'c3c6f141c28441f9bdd0988863be0d92',
     redirectUri: 'https://itzsudipta.github.io/GrooveGraph/callback.html',
     authEndpoint: 'https://accounts.spotify.com/authorize',
     scopes: [
