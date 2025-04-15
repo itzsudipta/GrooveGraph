@@ -1,0 +1,121 @@
+/* Basic Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #181818;
+    color: white;
+}
+
+/* Container */
+.container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #1db954;
+}
+
+header .logo h1 {
+    color: white;
+    font-size: 2rem;
+}
+
+header .auth button {
+    padding: 0.8rem 1.2rem;
+    background-color: #1db954;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+header .auth button:hover {
+    background-color: #1ed760;
+}
+
+/* Sidebar */
+.sidebar {
+    background-color: #2e2e2e;
+    width: 250px;
+    padding: 1rem;
+}
+
+.sidebar ul {
+    list-style: none;
+}
+
+.sidebar ul li {
+    padding: 1rem 0;
+}
+
+.sidebar ul li a {
+    color: #b3b3b3;
+    text-decoration: none;
+    font-size: 1.2rem;
+}
+
+.sidebar ul li a:hover {
+    color: #1db954;
+}
+
+/* Dashboard */
+.dashboard {
+    flex: 1;
+    padding: 2rem;
+}
+
+.dashboard h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.dashboard p {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Data Sections */
+.data-section {
+    margin-top: 2rem;
+}
+
+.data-section h3 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+}
+
+#tracks-chart,
+#artists-chart,
+#genres-chart {
+    background-color: #2a2a2a;
+    border-radius: 5px;
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #b3b3b3;
+}
+
+#tracks-chart {
+    background-color: #4c4c4c;
+}
+
+#artists-chart {
+    background-color: #505050;
+}
+
+#genres-chart {
+    background-color: #3f3f3f;
+}

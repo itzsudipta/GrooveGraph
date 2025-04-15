@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrooveGraph - Your Music Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h1>GrooveGraph</h1>
+            </div>
+            <div class="auth">
+                <button id="loginButton">Login with Spotify</button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <aside class="sidebar">
+                <ul>
+                    <li><a href="#">Top Tracks</a></li>
+                    <li><a href="#">Top Artists</a></li>
+                    <li><a href="#">Top Genres</a></li>
+                </ul>
+            </aside>
+
+            <section class="dashboard">
+                <h2>Welcome to GrooveGraph</h2>
+                <p>Your personalized music dashboard</p>
+
+                <div id="top-tracks" class="data-section">
+                    <h3>Top Tracks (Last 4 Weeks)</h3>
+                    <div id="tracks-chart"></div>
+                </div>
+
+                <div id="top-artists" class="data-section">
+                    <h3>Top Artists (All Time)</h3>
+                    <div id="artists-chart"></div>
+                </div>
+
+                <div id="top-genres" class="data-section">
+                    <h3>Top Genres (Last 6 Months)</h3>
+                    <div id="genres-chart"></div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

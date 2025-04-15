@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Spotify Callback</title>
+</head>
+
+<body>
+    <h2>Processing Spotify Login...</h2>
+    <script>
+        const code = new URLSearchParams(window.location.search).get('code');
+
+        if (code) {
+            // Save the code temporarily in localStorage
+            localStorage.setItem("spotify_code", code);
+            // Redirect back to your main dashboard
+            window.location.href = "index.html";
+        } else {
+            document.body.innerHTML = "<h2>Authorization failed. Please try again.</h2>";
+        }
+    </script>
+</body>
+
+</html>
