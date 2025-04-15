@@ -2,7 +2,7 @@
 
 document.getElementById("loginButton").addEventListener("click", function () {
     const client_id = "YOUR_SPOTIFY_CLIENT_ID"; // Your Spotify Client ID
-    const redirect_uri = "http://localhost:5500/callback"; // Redirect URI
+    const redirect_uri = "https://itzsudipta.github.io/GrooveGraph/callback.html"; // Updated Redirect URI to GitHub Pages
     const scope = "user-top-read";
     const response_type = "code";
     const state = Math.random().toString(36).substring(7); // Random state for security
