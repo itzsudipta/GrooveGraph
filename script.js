@@ -1,10 +1,7 @@
 const SPOTIFY_CONFIG = {
     clientId: 'c3c6f141c28441f9bdd0988863be0d92',
-    clientSecret: process.env.SPOTIFY_CLIENT_SECRET || '', // Add your client secret in .env
     redirectUri: 'https://itzsudipta.github.io/GrooveGraph/callback.html',
-    homePageUrl: 'https://itzsudipta.github.io/GrooveGraph/',
     authEndpoint: 'https://accounts.spotify.com/authorize',
-    tokenEndpoint: 'https://accounts.spotify.com/api/token',
     apiEndpoint: 'https://api.spotify.com/v1',
     scopes: [
         'user-top-read',
@@ -19,22 +16,15 @@ const SPOTIFY_CONFIG = {
 class SpotifyAuth {
     constructor(config) {
         this.config = config;
+        this.initializeLoginButton();
         this.checkAuthenticationOnLoad();
     }
 
-    checkAuthenticationOnLoad() {
-        const params = new URLSearchParams(window.location.search);
-        const code = params.get('code');
-        const state = params.get('state');
-        const storedState = sessionStorage.getItem('spotify_auth_state');
-
-        if (code && state === storedState) {
-            this.exchangeCodeForToken(code);
+    initializeLoginButton() {
+        const loginButton = document.getElementById('loginButton');
+        if (loginButton) {
+            loginButton.addEventListener('click', () => this.initiateLogin());
         }
-    }
-
-    generateState() {
-        return crypto.randomUUID();
     }
 
     async initiateLogin() {
@@ -51,9 +41,25 @@ class SpotifyAuth {
                 show_dialog: true
             });
 
-            window.location.href = `${this.config.authEndpoint}?${params}`;
+            const authUrl = `${this.config.authEndpoint}?${params.toString()}`;
+            window.location.href = authUrl;
         } catch (error) {
             this.handleError('Failed to initialize login');
+        }
+    }
+
+    generateState() {
+        return crypto.randomUUID();
+    }
+
+    checkAuthenticationOnLoad() {
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get('code');
+        const state = params.get('state');
+        const storedState = sessionStorage.getItem('spotify_auth_state');
+
+        if (code && state === storedState) {
+            this.exchangeCodeForToken(code);
         }
     }
 
@@ -97,7 +103,7 @@ class SpotifyAuth {
         const errorDiv = document.getElementById('error-message');
         if (errorDiv) {
             errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
+            errorDiv.classList.remove('hidden');
         }
     }
 }
@@ -182,11 +188,6 @@ const dataVisualizer = new DataVisualizer();
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', async () => {
-    const loginButton = document.getElementById('loginButton');
-    if (loginButton) {
-        loginButton.addEventListener('click', () => spotifyAuth.initiateLogin());
-    }
-
     if (sessionStorage.getItem('spotify_access_token')) {
         try {
             dataVisualizer.showLoading();
