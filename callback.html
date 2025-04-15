@@ -1,16 +1,14 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <title>GrooveGraph - Authentication</title>
 </head>
-
 <body>
     <script>
         const params = new URLSearchParams(window.location.search);
         const code = params.get('code');
         const state = params.get('state');
-
+        
         if (code && state === sessionStorage.getItem('spotify_auth_state')) {
             // Store the code and redirect to main app
             sessionStorage.setItem('spotify_auth_code', code);
@@ -21,5 +19,4 @@
         }
     </script>
 </body>
-
 </html>

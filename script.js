@@ -59,7 +59,8 @@ class SpotifyAuth {
             const response = await fetch('https://accounts.spotify.com/api/token', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Authorization': 'Basic ' + btoa(`${this.config.clientId}:${this.config.clientSecret}`)
                 },
                 body: new URLSearchParams({
                     grant_type: 'authorization_code',
@@ -75,8 +76,10 @@ class SpotifyAuth {
             sessionStorage.setItem('spotify_access_token', data.access_token);
             sessionStorage.setItem('spotify_refresh_token', data.refresh_token);
 
-            window.location.href = '/'; // Redirect to main page
+            // Change this line to redirect to your actual homepage URL
+            window.location.href = 'https://itzsudipta.github.io/GrooveGraph/';
         } catch (error) {
+            console.error('Token exchange error:', error);
             this.handleError('Authentication failed');
         }
     }
