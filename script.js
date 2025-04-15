@@ -1,8 +1,7 @@
+import { loadEnvVariables } from './config.js';
+
 const SPOTIFY_CONFIG = {
-    clientId: 'c3c6f141c28441f9bdd0988863be0d92',
-    redirectUri: 'https://itzsudipta.github.io/GrooveGraph/callback.html',
-    authEndpoint: 'https://accounts.spotify.com/authorize',
-    apiEndpoint: 'https://api.spotify.com/v1',
+    ...loadEnvVariables(),
     scopes: [
         'user-top-read',
         'user-read-private',
