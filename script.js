@@ -1,9 +1,11 @@
-const SPOTIFY_CONFIG = {
-    clientId: "c3c6f141c28441f9bdd0988863be0d92", // Replace with your actual Spotify Client ID
-    redirectUri: 'https://itzsudipta.github.io/GrooveGraph/callback.html',
-    scopes: ['user-top-read', 'user-read-recently-played'],
-    authEndpoint: 'https://accounts.spotify.com/authorize'
-};
+const client_id = 'c3c6f141c28441f9bdd0988863be0d92'; // Replace with your actual client ID
+const redirect_uri = 'https://itzsudipta.github.io/GrooveGraph/callback.html';
+const scopes = 'user-top-read user-read-private';
+
+document.getElementById('login-btn').addEventListener('click', () => {
+    const authUrl = `https://accounts.spotify.com/authorize?client_id=${client_id}&redirect_uri=${encodeURIComponent(redirect_uri)}&scope=${encodeURIComponent(scopes)}&response_type=token&show_dialog=true`;
+    window.location.href = authUrl;
+});
 
 class SpotifyAuth {
     constructor(config) {

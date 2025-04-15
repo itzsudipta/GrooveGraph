@@ -1,25 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-    <meta charset="UTF-8">
     <title>Spotify Callback</title>
+    <script>
+            window.onload = () => {
+                const hash = window.location.hash.substring(1);
+                const params = new URLSearchParams(hash);
+                const accessToken = params.get('access_token');
+
+            if (accessToken) {
+                localStorage.setItem('access_token', accessToken);
+                window.location.href = 'index.html'; // or wherever your dashboard is
+            } else {
+                document.body.innerText = 'Authorization failed. Please try again.';
+            }
+        };
+    </script>
 </head>
 
 <body>
-    <h2>Processing Spotify Login...</h2>
-    <script>
-        const code = new URLSearchParams(window.location.search).get('code');
-
-        if (code) {
-            // Save the code temporarily in localStorage
-            localStorage.setItem("spotify_code", code);
-            // Redirect back to your main dashboard
-            window.location.href = "index.html";
-        } else {
-            document.body.innerHTML = "<h2>Authorization failed. Please try again.</h2>";
-        }
-    </script>
+    <p>Redirecting...</p>
 </body>
 
 </html>
