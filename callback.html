@@ -1,4 +1,4 @@
-.html
+\callback.html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -18,59 +18,53 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Get the authorization code from URL parameters
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
-            const state = urlParams.get('state');
-            const storedState = sessionStorage.getItem('spotify_auth_state');
-
-            if (code && state === storedState) {
-                // Exchange the code for an access token
-                exchangeCodeForToken(code);
-            } else {
-                handleError('Authentication failed: Invalid state');
-            }
-        });
-
         async function exchangeCodeForToken(code) {
+            const clientId = 'c3c6f141c28441f9bdd0988863be0d92';
+            const clientSecret = '3cf5db4033304ad9a4691f2860b5d9e5';
+            const redirectUri = 'https://itzsudipta.github.io/GrooveGraph/callback.html';
+
             try {
-                const response = await fetch('https://accounts.spotify.com/api/token', {
+                const tokenResponse = await fetch('https://accounts.spotify.com/api/token', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
-                        'Authorization': 'Basic ' + btoa('c3c6f141c28441f9bdd0988863be0d92:3cf5db4033304ad9a4691f2860b5d9e5')
+                        'Authorization': 'Basic ' + btoa(clientId + ':' + clientSecret)
                     },
                     body: new URLSearchParams({
                         grant_type: 'authorization_code',
                         code: code,
-                        redirect_uri: 'https://itzsudipta.github.io/GrooveGraph/callback.html'
+                        redirect_uri: redirectUri
                     })
                 });
 
-                if (!response.ok) {
-                    throw new Error('Token exchange failed');
+                if (!tokenResponse.ok) {
+                    const errorData = await tokenResponse.json();
+                    throw new Error(errorData.error_description || 'Failed to exchange token');
                 }
 
-                const data = await response.json();
+                const tokens = await tokenResponse.json();
+                sessionStorage.setItem('spotify_access_token', tokens.access_token);
+                sessionStorage.setItem('spotify_refresh_token', tokens.refresh_token);
 
-                // Store tokens
-                sessionStorage.setItem('spotify_access_token', data.access_token);
-                sessionStorage.setItem('spotify_refresh_token', data.refresh_token);
-                sessionStorage.setItem('spotify_token_expiry', Date.now() + (data.expires_in * 1000));
-
-                // Redirect to main page
+                // Redirect back to main page
                 window.location.href = 'https://itzsudipta.github.io/GrooveGraph/';
             } catch (error) {
-                handleError('Authentication failed: ' + error.message);
+                document.getElementById('error-message').textContent = error.message;
+                document.getElementById('error-message').classList.remove('hidden');
             }
         }
 
-        function handleError(message) {
-            const errorDiv = document.getElementById('error-message');
-            errorDiv.textContent = message;
-            errorDiv.classList.remove('hidden');
-            console.error(message);
+        // Handle the callback
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const state = urlParams.get('state');
+        const storedState = sessionStorage.getItem('spotify_auth_state');
+
+        if (code && state === storedState) {
+            exchangeCodeForToken(code);
+        } else {
+            document.getElementById('error-message').textContent = 'Authentication failed: Invalid state';
+            document.getElementById('error-message').classList.remove('hidden');
         }
     </script>
 </body>
