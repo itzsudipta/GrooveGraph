@@ -1,4 +1,4 @@
-.html
+\callback.html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -20,21 +20,20 @@
     <script>
         async function exchangeCodeForToken(code) {
             const clientId = 'c3c6f141c28441f9bdd0988863be0d92';
-            const clientSecret = '3cf5db4033304ad9a4691f2860b5d9e5';
             const redirectUri = 'https://itzsudipta.github.io/GrooveGraph/callback.html';
 
             try {
                 const tokenResponse = await fetch('https://accounts.spotify.com/api/token', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'Authorization': 'Basic ' + btoa(clientId + ':' + clientSecret)
+                        'Content-Type': 'application/x-www-form-urlencoded'
                     },
                     body: new URLSearchParams({
                         grant_type: 'authorization_code',
                         code: code,
-                        redirect_uri: redirectUri
-                    })
+                        redirect_uri: redirectUri,
+                        client_id: clientId
+                    }).toString()
                 });
 
                 if (!tokenResponse.ok) {
@@ -44,7 +43,6 @@
 
                 const tokens = await tokenResponse.json();
                 sessionStorage.setItem('spotify_access_token', tokens.access_token);
-                sessionStorage.setItem('spotify_refresh_token', tokens.refresh_token);
                 window.location.href = 'https://itzsudipta.github.io/GrooveGraph/';
             } catch (error) {
                 console.error('Token exchange error:', error);
@@ -56,13 +54,10 @@
         // Handle the callback
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
-        const state = urlParams.get('state');
-        const storedState = sessionStorage.getItem('spotify_auth_state');
-
-        if (code && state === storedState) {
+        if (code) {
             exchangeCodeForToken(code);
         } else {
-            document.getElementById('error-message').textContent = 'Authentication failed: Invalid state';
+            document.getElementById('error-message').textContent = 'Authentication failed: No code received';
             document.getElementById('error-message').classList.remove('hidden');
         }
     </script>
