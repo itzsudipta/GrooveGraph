@@ -15,8 +15,8 @@
                 // Store the access token in sessionStorage
                 sessionStorage.setItem('spotify_access_token', accessToken);
 
-                // Redirect back to the main page or desired page
-                window.location.href = '/'; // Redirect to your main app page
+                // Redirect to the main page after successful authentication
+                window.location.href = "https://itzsudipta.github.io/GrooveGraph/index.html"; // Redirect to your main app page
             } else {
                 console.error('No access token found');
             }
