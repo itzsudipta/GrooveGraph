@@ -1,31 +1,78 @@
+.html
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Callback</title>
-    <script>
-        // This script runs when the callback page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            const params = new URLSearchParams(window.location.hash.substring(1));
-            const accessToken = params.get('access_token');
-
-            if (accessToken) {
-                // Store the access token in sessionStorage
-                sessionStorage.setItem('spotify_access_token', accessToken);
-
-                // Redirect to the main page after successful authentication
-                window.location.href = "https://itzsudipta.github.io/GrooveGraph/index.html"; // Redirect to your main app page
-            } else {
-                console.error('No access token found');
-            }
-        });
-    </script>
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <title>Authentication - GrooveGraph</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <h1>Redirecting...</h1>
+    <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Completing authentication...</p>
+        <div id="error-message" class="error-message hidden"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get the authorization code from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state');
+            const storedState = sessionStorage.getItem('spotify_auth_state');
+
+            if (code && state === storedState) {
+                // Exchange the code for an access token
+                exchangeCodeForToken(code);
+            } else {
+                handleError('Authentication failed: Invalid state');
+            }
+        });
+
+        async function exchangeCodeForToken(code) {
+            try {
+                const response = await fetch('https://accounts.spotify.com/api/token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Authorization': 'Basic ' + btoa('c3c6f141c28441f9bdd0988863be0d92:3cf5db4033304ad9a4691f2860b5d9e5')
+                    },
+                    body: new URLSearchParams({
+                        grant_type: 'authorization_code',
+                        code: code,
+                        redirect_uri: 'https://itzsudipta.github.io/GrooveGraph/callback.html'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Token exchange failed');
+                }
+
+                const data = await response.json();
+
+                // Store tokens
+                sessionStorage.setItem('spotify_access_token', data.access_token);
+                sessionStorage.setItem('spotify_refresh_token', data.refresh_token);
+                sessionStorage.setItem('spotify_token_expiry', Date.now() + (data.expires_in * 1000));
+
+                // Redirect to main page
+                window.location.href = 'https://itzsudipta.github.io/GrooveGraph/';
+            } catch (error) {
+                handleError('Authentication failed: ' + error.message);
+            }
+        }
+
+        function handleError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+            console.error(message);
+        }
+    </script>
 </body>
 
 </html>
