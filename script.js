@@ -35,7 +35,7 @@ class SpotifyAuth {
 
             const params = new URLSearchParams({
                 client_id: this.config.clientId,
-                response_type: 'code',
+                response_type: 'code', // Changed to authorization code flow
                 redirect_uri: this.config.redirectUri,
                 scope: this.config.scopes,
                 state: state,
@@ -54,13 +54,18 @@ class SpotifyAuth {
     }
 
     checkAuthenticationOnLoad() {
-        const params = new URLSearchParams(window.location.search);
-        const code = params.get('code');
+        const hash = window.location.hash.substring(1); // Get the hash part of the URL
+        const params = new URLSearchParams(hash); // Extract the parameters
+        const accessToken = params.get('access_token');
         const state = params.get('state');
         const storedState = sessionStorage.getItem('spotify_auth_state');
 
-        if (code && state === storedState) {
-            this.exchangeCodeForToken(code);
+        // Check if access_token and state are present and match
+        if (accessToken && state === storedState) {
+            this.saveTokenData(accessToken); // Save the access token
+            window.location.href = this.config.redirectUri; // Redirect back to the redirectUri
+        } else {
+            console.error('Authentication failed or state mismatch');
         }
     }
 
@@ -86,7 +91,7 @@ class SpotifyAuth {
 
             const data = await response.json();
             this.saveTokenData(data);
-            window.location.href = this.config.homePageUrl; // Redirect after token is received
+            window.location.href = this.config.homePageUrl;
         } catch (error) {
             console.error('Token exchange error:', error);
             this.handleError('Authentication failed');
