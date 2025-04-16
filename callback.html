@@ -20,53 +20,51 @@
     <script>
         async function exchangeCodeForToken(code) {
             const clientId = 'c3c6f141c28441f9bdd0988863be0d92';
+            const clientSecret = '3cf5db4033304ad9a4691f2860b5d9e5';
             const redirectUri = 'https://itzsudipta.github.io/GrooveGraph/callback.html';
 
             try {
                 const tokenResponse = await fetch('https://accounts.spotify.com/api/token', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Authorization': 'Basic ' + btoa(clientId + ':' + clientSecret)
                     },
                     body: new URLSearchParams({
                         grant_type: 'authorization_code',
                         code: code,
-                        redirect_uri: redirectUri,
-                        client_id: clientId
+                        redirect_uri: redirectUri
                     })
                 });
 
                 if (!tokenResponse.ok) {
                     const errorData = await tokenResponse.json();
-                    throw new Error(errorData.error_description || 'Failed to exchange token');
+                    throw new Error(errorData.error_description || 'Token exchange failed');
                 }
 
                 const tokens = await tokenResponse.json();
                 sessionStorage.setItem('spotify_access_token', tokens.access_token);
-
-                // Redirect back to main page
+                sessionStorage.setItem('spotify_refresh_token', tokens.refresh_token);
                 window.location.href = 'https://itzsudipta.github.io/GrooveGraph/';
             } catch (error) {
+                console.error('Token exchange error:', error);
                 document.getElementById('error-message').textContent = error.message;
                 document.getElementById('error-message').classList.remove('hidden');
-                console.error('Token exchange error:', error);
             }
         }
 
-        // Handle the callback immediately when page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
-            const state = urlParams.get('state');
-            const storedState = sessionStorage.getItem('spotify_auth_state');
+        // Handle the callback
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const state = urlParams.get('state');
+        const storedState = sessionStorage.getItem('spotify_auth_state');
 
-            if (code && state === storedState) {
-                exchangeCodeForToken(code);
-            } else {
-                document.getElementById('error-message').textContent = 'Authentication failed: Invalid state';
-                document.getElementById('error-message').classList.remove('hidden');
-            }
-        });
+        if (code && state === storedState) {
+            exchangeCodeForToken(code);
+        } else {
+            document.getElementById('error-message').textContent = 'Authentication failed: Invalid state';
+            document.getElementById('error-message').classList.remove('hidden');
+        }
     </script>
 </body>
 
