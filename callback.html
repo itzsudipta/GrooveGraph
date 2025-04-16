@@ -1,32 +1,22 @@
-\callback.html
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <title>Authentication - GrooveGraph</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-
-<body>
-    <div class="loading-container">
-        <div class="spinner"></div>
-        <p>Completing authentication...</p>
-        <div id="error-message" class="error-message hidden"></div>
-    </div>
-
+    <title>Callback</title>
     <script>
         async function exchangeCodeForToken(code) {
-            const clientId = 'c3c6f141c28441f9bdd0988863be0d92';
+            const clientId = 'c3c6f141c28441f9bdd0988863be0d92'; // Replace with your actual client ID
+            const clientSecret = 'ff1254589c8846248f3b705c3a3c2251'; // Replace with your actual client secret
             const redirectUri = 'https://itzsudipta.github.io/GrooveGraph/callback.html';
 
             try {
                 const tokenResponse = await fetch('https://accounts.spotify.com/api/token', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Authorization': 'Basic ' + btoa(clientId + ':' + clientSecret) // Base64 encoded client ID and secret
                     },
                     body: new URLSearchParams({
                         grant_type: 'authorization_code',
@@ -43,7 +33,7 @@
 
                 const tokens = await tokenResponse.json();
                 sessionStorage.setItem('spotify_access_token', tokens.access_token);
-                window.location.href = 'https://itzsudipta.github.io/GrooveGraph/';
+                window.location.href = 'https://itzsudipta.github.io/GrooveGraph/'; // Redirect to your main page
             } catch (error) {
                 console.error('Token exchange error:', error);
                 document.getElementById('error-message').textContent = error.message;
@@ -51,16 +41,33 @@
             }
         }
 
-        // Handle the callback
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
-        if (code) {
-            exchangeCodeForToken(code);
-        } else {
-            document.getElementById('error-message').textContent = 'Authentication failed: No code received';
-            document.getElementById('error-message').classList.remove('hidden');
-        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);  // Changed to use query string params
+            const code = params.get('code');
+            const error = params.get('error');
+
+            if (error) {
+                console.error('Error during authentication:', error);
+                document.getElementById('error-message').textContent = 'Authentication failed. Please try again.';
+                document.getElementById('error-message').classList.remove('hidden');
+                return;
+            }
+
+            if (code) {
+                // Call the function to exchange the code for a token
+                exchangeCodeForToken(code);
+            } else {
+                console.error('No code found');
+                document.getElementById('error-message').textContent = 'Authentication failed. Please try again.';
+                document.getElementById('error-message').classList.remove('hidden');
+            }
+        });
     </script>
+</head>
+
+<body>
+    <h1>Redirecting...</h1>
+    <div id="error-message" class="hidden" style="color: red;"></div>
 </body>
 
 </html>
