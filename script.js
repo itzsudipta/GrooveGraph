@@ -1,3 +1,5 @@
+console.log("Script loaded");
+
 import { loadEnvVariables } from './config.js';
 
 const SPOTIFY_CONFIG = {
@@ -15,14 +17,14 @@ const SPOTIFY_CONFIG = {
 class SpotifyAuth {
     constructor(config) {
         this.config = config;
-        this.initializeLoginButton();
-        this.checkAuthenticationOnLoad();
     }
 
     initializeLoginButton() {
         const loginButton = document.getElementById('loginButton');
         if (loginButton) {
             loginButton.addEventListener('click', () => this.initiateLogin());
+        } else {
+            console.warn("Login button with ID 'loginButton' not found.");
         }
     }
 
@@ -84,7 +86,7 @@ class SpotifyAuth {
 
             const data = await response.json();
             this.saveTokenData(data);
-            window.location.href = this.config.homePageUrl;
+            window.location.href = this.config.homePageUrl; // Redirect after token is received
         } catch (error) {
             console.error('Token exchange error:', error);
             this.handleError('Authentication failed');
@@ -109,90 +111,150 @@ class SpotifyAuth {
 
 class DataVisualizer {
     constructor() {
-        this.chartElement = document.getElementById('tracks-chart');
+        this.trackElement = document.getElementById('tracks-chart');
+        this.artistElement = document.getElementById('artists-chart');
+        this.genreElement = document.getElementById('genres-chart');
     }
 
     showLoading() {
-        if (this.chartElement) {
-            this.chartElement.innerHTML = `
-                <div class="loading-spinner">
-                    <div class="spinner"></div>
-                    <span>Loading your top tracks...</span>
-                </div>`;
-        }
+        const loadingElement = document.getElementById('loading');
+        if (loadingElement) loadingElement.classList.remove('hidden');
+    }
+
+    hideLoading() {
+        const loadingElement = document.getElementById('loading');
+        if (loadingElement) loadingElement.classList.add('hidden');
     }
 
     displayError(message) {
-        if (this.chartElement) {
-            this.chartElement.innerHTML = `
-                <div class="error-message">
-                    <p>${message}</p>
-                    <button class="retry-button" onclick="location.reload()">Try Again</button>
-                </div>`;
+        const errorDiv = document.getElementById('error-message');
+        if (errorDiv) {
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
         }
     }
 
-    async displayTopTracks(tracks) {
-        if (!this.chartElement || !tracks.length) {
+    displayTopTracks(tracks) {
+        if (!this.trackElement || !tracks.length) {
             this.displayError('No tracks available');
             return;
         }
 
-        try {
-            this.chartElement.innerHTML = `
-                <div class="tracks-container">
-                    <h2>Your Top Tracks</h2>
-                    <div class="tracks-list">
-                        ${tracks.map(track => `
-                            <div class="track-item">
-                                <img src="${track.album.images[2].url}" alt="${track.name}" />
-                                <div class="track-info">
-                                    <span class="track-name">${track.name}</span>
-                                    <span class="artist-name">${track.artists[0].name}</span>
-                                </div>
+        this.trackElement.innerHTML = `
+            <div class="tracks-container">
+                <div class="tracks-list">
+                    ${tracks.map(track => `
+                        <div class="track-item">
+                            <img src="${track.album.images[2].url}" alt="${track.name}" />
+                            <div class="track-info">
+                                <span class="track-name">${track.name}</span>
+                                <span class="artist-name">${track.artists[0].name}</span>
                             </div>
-                        `).join('')}
-                    </div>
-                </div>`;
-        } catch (error) {
-            this.displayError('Failed to display tracks data');
+                        </div>`).join('')}
+                </div>
+            </div>`;
+    }
+
+    displayTopArtists(artists) {
+        if (!this.artistElement || !artists.length) {
+            this.displayError('No artists available');
+            return;
         }
+
+        this.artistElement.innerHTML = `
+            <div class="artists-container">
+                <div class="artists-list">
+                    ${artists.map(artist => `
+                        <div class="artist-item">
+                            <img src="${artist.images[2]?.url || ''}" alt="${artist.name}" />
+                            <span class="artist-name">${artist.name}</span>
+                        </div>`).join('')}
+                </div>
+            </div>`;
+    }
+
+    displayTopGenres(genres) {
+        if (!this.genreElement || !genres.length) {
+            this.displayError('No genre data found');
+            return;
+        }
+
+        this.genreElement.innerHTML = `
+            <div class="genres-container">
+                <ul class="genre-list">
+                    ${genres.map(([genre, count]) => `
+                        <li><strong>${genre}</strong> (${count})</li>
+                    `).join('')}
+                </ul>
+            </div>`;
     }
 }
 
 async function fetchTopTracks() {
-    try {
-        const accessToken = sessionStorage.getItem('spotify_access_token');
-        if (!accessToken) throw new Error('No access token available');
+    const accessToken = sessionStorage.getItem('spotify_access_token');
+    if (!accessToken) throw new Error('No access token available');
 
-        const response = await fetch(`${SPOTIFY_CONFIG.apiEndpoint}/me/top/tracks`, {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`
-            }
-        });
+    const response = await fetch(`${SPOTIFY_CONFIG.apiEndpoint}/me/top/tracks`, {
+        headers: { 'Authorization': `Bearer ${accessToken}` }
+    });
 
-        if (!response.ok) throw new Error('Failed to fetch tracks');
+    if (!response.ok) throw new Error('Failed to fetch top tracks');
 
-        const data = await response.json();
-        return data.items;
-    } catch (error) {
-        console.error('Error fetching top tracks:', error);
-        throw error;
-    }
+    const data = await response.json();
+    return data.items;
 }
 
-// Initialize components
-const spotifyAuth = new SpotifyAuth(SPOTIFY_CONFIG);
-const dataVisualizer = new DataVisualizer();
+async function fetchTopArtists() {
+    const accessToken = sessionStorage.getItem('spotify_access_token');
+    if (!accessToken) throw new Error('No access token available');
 
-// Event Listeners
+    const response = await fetch(`${SPOTIFY_CONFIG.apiEndpoint}/me/top/artists`, {
+        headers: { 'Authorization': `Bearer ${accessToken}` }
+    });
+
+    if (!response.ok) throw new Error('Failed to fetch top artists');
+
+    const data = await response.json();
+    return data.items;
+}
+
+function extractTopGenres(artists) {
+    const genreMap = {};
+    artists.forEach(artist => {
+        artist.genres.forEach(genre => {
+            genreMap[genre] = (genreMap[genre] || 0) + 1;
+        });
+    });
+
+    return Object.entries(genreMap)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10); // Top 10 genres
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+    const spotifyAuth = new SpotifyAuth(SPOTIFY_CONFIG);
+    const dataVisualizer = new DataVisualizer();
+
+    spotifyAuth.initializeLoginButton();
+    spotifyAuth.checkAuthenticationOnLoad();
+
     if (sessionStorage.getItem('spotify_access_token')) {
         try {
             dataVisualizer.showLoading();
-            const tracks = await fetchTopTracks();
+            const [tracks, artists] = await Promise.all([
+                fetchTopTracks(),
+                fetchTopArtists()
+            ]);
+
+            const topGenres = extractTopGenres(artists);
+
+            dataVisualizer.hideLoading();
+            document.getElementById('data-container').classList.remove('hidden');
             dataVisualizer.displayTopTracks(tracks);
+            dataVisualizer.displayTopArtists(artists);
+            dataVisualizer.displayTopGenres(topGenres);
         } catch (error) {
+            console.error('Dashboard error:', error);
             dataVisualizer.displayError('Failed to load your music data');
         }
     }

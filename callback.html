@@ -1,36 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>Authenticating... - GrooveGraph</title>
-    <script src="script.js"></script>
-    <style>
-        .loading {
-            text-align: center;
-            margin-top: 50px;
-            font-family: Arial, sans-serif;
-        }
-    </style>
-</head>
-<body>
-    <div class="loading">
-        <h2>Completing authentication...</h2>
-        <div id="error-message" style="display: none; color: red;"></div>
-    </div>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Callback</title>
     <script>
-        const params = new URLSearchParams(window.location.search);
-        const code = params.get('code');
-        const state = params.get('state');
-        
-        if (code && state === sessionStorage.getItem('spotify_auth_state')) {
-            // Store the code and redirect to main app
-            sessionStorage.setItem('spotify_auth_code', code);
-            window.location.href = '/';
-        } else {
-            // Handle error
-            document.getElementById('error-message').style.display = 'block';
-            document.getElementById('error-message').innerHTML = 'Authentication failed. Please try again.';
-        }
+        // This script runs when the callback page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.hash.substring(1));
+            const accessToken = params.get('access_token');
+
+            if (accessToken) {
+                // Store the access token in sessionStorage
+                sessionStorage.setItem('spotify_access_token', accessToken);
+
+                // Redirect back to the main page or desired page
+                window.location.href = '/'; // Redirect to your main app page
+            } else {
+                console.error('No access token found');
+            }
+        });
     </script>
+</head>
+
+<body>
+    <h1>Redirecting...</h1>
 </body>
+
 </html>
