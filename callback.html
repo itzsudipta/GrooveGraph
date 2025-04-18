@@ -1,3 +1,4 @@
+\callback.html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,50 +6,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GrooveGraph - Authentication</title>
-    <script>
-        if (!codeVerifier) {
-                document.getElementById('error-message').textContent = 'Missing code verifier. Please restart login.';
-                document.getElementById('error-message').classList.remove('hidden');
-                return;
-            }
+    <style>
+        .hidden {
+            display: none;
+        }
 
+        #loading {
+            text-align: center;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        #error-message {
+            color: red;
+            font-size: 16px;
+            padding: 10px;
+            text-align: center;
+        }
+    </style>
+    <script>
         async function exchangeCodeForToken(code) {
-            const clientId = 'c3c6f141c28441f9bdd0988863be0d92'; // Your Spotify client ID
-            const redirectUri = 'https://itzsudipta.github.io/GrooveGraph/callback.html'; // Callback URL
-            const codeVerifier = sessionStorage.getItem('code_verifier'); // Code verifier for PKCE
+            const clientId = 'c3c6f141c28441f9bdd0988863be0d92';
+            const redirectUri = 'https://itzsudipta.github.io/GrooveGraph/callback.html';
+            const codeVerifier = sessionStorage.getItem('code_verifier');
 
             try {
                 const response = await fetch('https://accounts.spotify.com/api/token', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Content-Type': 'application/x-www-form-urlencoded'
                     },
                     body: new URLSearchParams({
                         client_id: clientId,
                         grant_type: 'authorization_code',
                         code: code,
                         redirect_uri: redirectUri,
-                        code_verifier: codeVerifier,
+                        code_verifier: codeVerifier
                     })
                 });
 
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.error_description);
 
-                // Store the access token in session storage
                 sessionStorage.setItem('spotify_access_token', data.access_token);
                 sessionStorage.removeItem('code_verifier');
 
-                // Redirect back to the main page (root of the app)
-                window.location.href = redirectUri.replace('/callback.html', '/');
+                // Redirect to main page
+                window.location.href = 'https://itzsudipta.github.io/GrooveGraph/';
             } catch (error) {
-                console.error('Token exchange failed:', error);
-                document.getElementById('error-message').textContent = `Token exchange failed: ${error.message}`;
-                document.getElementById('error-message').classList.remove('hidden');
+                handleError(`Token exchange failed: ${error.message}`);
             }
         }
 
-        // Handle the callback URL parameters
+        function handleError(message) {
+            document.getElementById('loading').classList.add('hidden');
+            const errorElement = document.getElementById('error-message');
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+        }
+
+        // Handle callback on page load
         document.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
             const code = params.get('code');
@@ -56,24 +73,21 @@
             const state = params.get('state');
             const storedState = sessionStorage.getItem('spotify_auth_state');
 
-            // Handle errors
             if (error) {
-                document.getElementById('error-message').textContent = `Authentication failed: ${error}`;
-                document.getElementById('error-message').classList.remove('hidden');
+                handleError(`Authentication failed: ${error}`);
                 return;
             }
 
-            // State mismatch check
             if (state !== storedState) {
-                document.getElementById('error-message').textContent = 'State mismatch. Please try again.';
-                document.getElementById('error-message').classList.remove('hidden');
+                handleError('State mismatch. Please try again.');
                 return;
             }
 
-            // Exchange the code for an access token if all checks are passed
             if (code) {
-                sessionStorage.removeItem('spotify_auth_state'); // Clear state from session
-                exchangeCodeForToken(code); // Call function to exchange the code
+                sessionStorage.removeItem('spotify_auth_state');
+                exchangeCodeForToken(code);
+            } else {
+                handleError('No code received. Please try again.');
             }
         });
     </script>
@@ -81,7 +95,7 @@
 
 <body>
     <div id="loading">Completing authentication...</div>
-    <div id="error-message" class="hidden" style="color: red; font-size: 16px; padding: 10px;"></div>
+    <div id="error-message" class="hidden"></div>
 </body>
 
 </html>
