@@ -196,13 +196,16 @@ header {
 }
 
 .chart {
-    min-height: 300px;
+    min-height: 450px;
     background: linear-gradient(145deg, rgba(40, 40, 40, 0.6), rgba(24, 24, 24, 0.8));
         border-radius: 16px;
         padding: 1.5rem;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         border: 1px solid var(--card-border);
         transition: all 0.3s ease;
+    overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--primary-color) var(--background-dark);
 }
 
 .chart:hover {
@@ -211,6 +214,19 @@ header {
     box-shadow: 0 12px 40px rgba(29, 185, 84, 0.15);
 }
 
+.chart::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chart::-webkit-scrollbar-track {
+    background: var(--background-dark);
+    border-radius: 3px;
+}
+
+.chart::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 3px;
+}
 /* Enhanced Track and Artist Items */
 .track-item,
 .artist-item {
@@ -455,5 +471,35 @@ header {
 @keyframes spin {
     to {
         transform: rotate(360deg);
+    }
+}
+/* Data Container Grid Layout */
+.data-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    padding: 1rem;
+}
+
+/* Top Tracks and Artists Layout */
+#top-tracks,
+#top-artists {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+/* Full Width Genre Section */
+#top-genres {
+    grid-column: 1 / -1;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+    .data-container {
+        grid-template-columns: 1fr;
+    }
+
+    #top-genres {
+        grid-column: auto;
     }
 }
