@@ -164,10 +164,28 @@ header {
 
 /* Data Visualization */
 .data-section {
-    background-color: var(--background-light);
-    border-radius: 8px;
-    padding: 1.5rem;
+    background: rgba(40, 40, 40, 0.7);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 2rem;
     margin-bottom: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .data-section:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(29, 185, 84, 0.15);
+    }
+    
+    .data-section h3 {
+        color: var(--primary-color);
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
 }
 
 .chart {
@@ -177,6 +195,115 @@ header {
     padding: 1rem;
 }
 
+/* Track and Artist Cards */
+.track-item,
+.artist-item {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem;
+    background: rgba(24, 24, 24, 0.6);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.track-item:hover,
+.artist-item:hover {
+    background: rgba(29, 185, 84, 0.1);
+    transform: scale(1.02);
+    border-color: rgba(29, 185, 84, 0.3);
+}
+
+.track-image,
+.artist-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.track-info,
+.artist-info {
+    flex: 1;
+}
+
+.track-info h4,
+.artist-info h4 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.track-info p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.track-link,
+.artist-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    background: rgba(29, 185, 84, 0.1);
+    transition: all 0.3s ease;
+}
+
+.track-link:hover,
+.artist-link:hover {
+    background: rgba(29, 185, 84, 0.2);
+    transform: translateX(5px);
+}
+
+/* Genre Pills */
+.genre-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-top: 1rem;
+}
+
+.genre-pill {
+    background: linear-gradient(45deg, var(--primary-color), var(--primary-hover));
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(29, 185, 84, 0.2);
+    transition: all 0.3s ease;
+}
+
+.genre-pill:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(29, 185, 84, 0.3);
+}
+
+/* Statistics Counter */
+.stats-counter {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    text-align: center;
+    margin: 1rem 0;
+    text-shadow: 0 2px 10px rgba(29, 185, 84, 0.3);
+}
+
+/* Grid Layout for Charts */
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
 /* Loading and Error States */
 .loading {
     display: flex;
@@ -228,6 +355,31 @@ header {
     .dashboard {
         padding: 1rem;
     }
+.track-item,
+.artist-item {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.5rem;
+}
+
+.track-image,
+.artist-image {
+    width: 120px;
+    height: 120px;
+}
+
+.track-info,
+.artist-info {
+    width: 100%;
+}
+
+.genre-list {
+    justify-content: center;
+}
+
+.charts-grid {
+    grid-template-columns: 1fr;
+}
 }
 
 .loading-container {
