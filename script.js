@@ -1,266 +1,186 @@
-console.log("Script loaded");
+document.addEventListener('DOMContentLoaded', () => {
+    const loginButton = document.getElementById('loginButton');
+    const userProfile = document.getElementById('user-profile');
+    const profileName = document.getElementById('profile-name');
+    const profileImage = document.getElementById('profile-image');
+    const timeRangeSelect = document.getElementById('time-range-select');
+    const topTracksSection = document.getElementById('top-tracks');
+    const topArtistsSection = document.getElementById('top-artists');
+    const topGenresSection = document.getElementById('top-genres');
+    const errorMessage = document.getElementById('error-message');
+    const loadingMessage = document.getElementById('loading');
+    const dataContainer = document.getElementById('data-container');
 
-import { loadEnvVariables } from './config.js';
+    let accessToken = null;
 
-const SPOTIFY_CONFIG = {
-    ...loadEnvVariables(),
-    scopes: [
-        'user-top-read',
-        'user-read-private',
-        'user-read-email',
-        'user-read-recently-played',
-        'playlist-read-private',
-        'user-library-read'
-    ].join(' ')
-};
-
-class SpotifyAuth {
-    constructor(config) {
-        this.config = config;
-    }
-
-    initializeLoginButton() {
-        const loginButton = document.getElementById('loginButton');
-        if (loginButton) {
-            loginButton.addEventListener('click', () => this.initiateLogin());
-        } else {
-            console.warn("Login button with ID 'loginButton' not found.");
-        }
-    }
-
-    async initiateLogin() {
-        try {
-            const state = this.generateState();
+    // Step 1: Handle login
+    loginButton.addEventListener('click', () => {
+        const state = generateRandomString(16);
+        const codeVerifier = generateRandomString(64);
+        generateCodeChallenge(codeVerifier).then(codeChallenge => {
+            sessionStorage.setItem('code_verifier', codeVerifier);
             sessionStorage.setItem('spotify_auth_state', state);
 
-            const params = new URLSearchParams({
-                client_id: this.config.clientId,
-                response_type: 'code', // Changed to authorization code flow
-                redirect_uri: this.config.redirectUri,
-                scope: this.config.scopes,
+            const authUrl = `${spotifyConfig.authEndpoint}?` + new URLSearchParams({
+                response_type: 'code',
+                client_id: spotifyConfig.clientId,
+                scope: spotifyConfig.scopes,
+                redirect_uri: spotifyConfig.redirectUri,
                 state: state,
-                show_dialog: true
+                code_challenge_method: 'S256',
+                code_challenge: codeChallenge
             });
 
-            const authUrl = `${this.config.authEndpoint}?${params.toString()}`;
             window.location.href = authUrl;
-        } catch (error) {
-            this.handleError('Failed to initialize login');
-        }
-    }
-
-    generateState() {
-        return crypto.randomUUID();
-    }
-
-    checkAuthenticationOnLoad() {
-        const hash = window.location.hash.substring(1); // Get the hash part of the URL
-        const params = new URLSearchParams(hash); // Extract the parameters
-        const accessToken = params.get('access_token');
-        const state = params.get('state');
-        const storedState = sessionStorage.getItem('spotify_auth_state');
-
-        // Check if access_token and state are present and match
-        if (accessToken && state === storedState) {
-            this.saveTokenData(accessToken); // Save the access token
-            window.location.href = this.config.redirectUri; // Redirect back to the redirectUri
-        } else {
-            console.error('Authentication failed or state mismatch');
-        }
-    }
-
-    async exchangeCodeForToken(code) {
-        try {
-            const response = await fetch(this.config.tokenEndpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Authorization': 'Basic ' + btoa(`${this.config.clientId}:${this.config.clientSecret}`)
-                },
-                body: new URLSearchParams({
-                    grant_type: 'authorization_code',
-                    code: code,
-                    redirect_uri: this.config.redirectUri
-                })
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(`Token exchange failed: ${errorData.error}`);
-            }
-
-            const data = await response.json();
-            this.saveTokenData(data);
-            window.location.href = this.config.homePageUrl;
-        } catch (error) {
-            console.error('Token exchange error:', error);
-            this.handleError('Authentication failed');
-        }
-    }
-
-    saveTokenData(data) {
-        sessionStorage.setItem('spotify_access_token', data.access_token);
-        sessionStorage.setItem('spotify_refresh_token', data.refresh_token);
-        sessionStorage.setItem('spotify_token_expiry', Date.now() + (data.expires_in * 1000));
-    }
-
-    handleError(message) {
-        console.error(message);
-        const errorDiv = document.getElementById('error-message');
-        if (errorDiv) {
-            errorDiv.textContent = message;
-            errorDiv.classList.remove('hidden');
-        }
-    }
-}
-
-class DataVisualizer {
-    constructor() {
-        this.trackElement = document.getElementById('tracks-chart');
-        this.artistElement = document.getElementById('artists-chart');
-        this.genreElement = document.getElementById('genres-chart');
-    }
-
-    showLoading() {
-        const loadingElement = document.getElementById('loading');
-        if (loadingElement) loadingElement.classList.remove('hidden');
-    }
-
-    hideLoading() {
-        const loadingElement = document.getElementById('loading');
-        if (loadingElement) loadingElement.classList.add('hidden');
-    }
-
-    displayError(message) {
-        const errorDiv = document.getElementById('error-message');
-        if (errorDiv) {
-            errorDiv.textContent = message;
-            errorDiv.classList.remove('hidden');
-        }
-    }
-
-    displayTopTracks(tracks) {
-        if (!this.trackElement || !tracks.length) {
-            this.displayError('No tracks available');
-            return;
-        }
-
-        this.trackElement.innerHTML = `
-            <div class="tracks-container">
-                <div class="tracks-list">
-                    ${tracks.map(track => `
-                        <div class="track-item">
-                            <img src="${track.album.images[2].url}" alt="${track.name}" />
-                            <div class="track-info">
-                                <span class="track-name">${track.name}</span>
-                                <span class="artist-name">${track.artists[0].name}</span>
-                            </div>
-                        </div>`).join('')}
-                </div>
-            </div>`;
-    }
-
-    displayTopArtists(artists) {
-        if (!this.artistElement || !artists.length) {
-            this.displayError('No artists available');
-            return;
-        }
-
-        this.artistElement.innerHTML = `
-            <div class="artists-container">
-                <div class="artists-list">
-                    ${artists.map(artist => `
-                        <div class="artist-item">
-                            <img src="${artist.images[2]?.url || ''}" alt="${artist.name}" />
-                            <span class="artist-name">${artist.name}</span>
-                        </div>`).join('')}
-                </div>
-            </div>`;
-    }
-
-    displayTopGenres(genres) {
-        if (!this.genreElement || !genres.length) {
-            this.displayError('No genre data found');
-            return;
-        }
-
-        this.genreElement.innerHTML = `
-            <div class="genres-container">
-                <ul class="genre-list">
-                    ${genres.map(([genre, count]) => `
-                        <li><strong>${genre}</strong> (${count})</li>
-                    `).join('')}
-                </ul>
-            </div>`;
-    }
-}
-
-async function fetchTopTracks() {
-    const accessToken = sessionStorage.getItem('spotify_access_token');
-    if (!accessToken) throw new Error('No access token available');
-
-    const response = await fetch(`${SPOTIFY_CONFIG.apiEndpoint}/me/top/tracks`, {
-        headers: { 'Authorization': `Bearer ${accessToken}` }
-    });
-
-    if (!response.ok) throw new Error('Failed to fetch top tracks');
-
-    const data = await response.json();
-    return data.items;
-}
-
-async function fetchTopArtists() {
-    const accessToken = sessionStorage.getItem('spotify_access_token');
-    if (!accessToken) throw new Error('No access token available');
-
-    const response = await fetch(`${SPOTIFY_CONFIG.apiEndpoint}/me/top/artists`, {
-        headers: { 'Authorization': `Bearer ${accessToken}` }
-    });
-
-    if (!response.ok) throw new Error('Failed to fetch top artists');
-
-    const data = await response.json();
-    return data.items;
-}
-
-function extractTopGenres(artists) {
-    const genreMap = {};
-    artists.forEach(artist => {
-        artist.genres.forEach(genre => {
-            genreMap[genre] = (genreMap[genre] || 0) + 1;
         });
     });
 
-    return Object.entries(genreMap)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10); // Top 10 genres
-}
+    // Step 2: Get the access token from session after redirect
+    accessToken = sessionStorage.getItem('spotify_access_token');
+    if (accessToken) {
+        loginButton.style.display = 'none'; // Hide login button after successful login
+        userProfile.classList.remove('hidden'); // Show user profile section
+        fetchUserData();
+    }
 
-document.addEventListener('DOMContentLoaded', async () => {
-    const spotifyAuth = new SpotifyAuth(SPOTIFY_CONFIG);
-    const dataVisualizer = new DataVisualizer();
-
-    spotifyAuth.initializeLoginButton();
-    spotifyAuth.checkAuthenticationOnLoad();
-
-    if (sessionStorage.getItem('spotify_access_token')) {
-        try {
-            dataVisualizer.showLoading();
-            const [tracks, artists] = await Promise.all([
-                fetchTopTracks(),
-                fetchTopArtists()
-            ]);
-
-            const topGenres = extractTopGenres(artists);
-
-            dataVisualizer.hideLoading();
-            document.getElementById('data-container').classList.remove('hidden');
-            dataVisualizer.displayTopTracks(tracks);
-            dataVisualizer.displayTopArtists(artists);
-            dataVisualizer.displayTopGenres(topGenres);
-        } catch (error) {
-            console.error('Dashboard error:', error);
-            dataVisualizer.displayError('Failed to load your music data');
+    // Step 3: Fetch user data from Spotify API
+    function fetchUserData() {
+        if (!accessToken) {
+            handleError('No access token found');
+            return;
         }
+
+        showLoading();
+
+        fetch(`${spotifyConfig.apiEndpoint}/me`, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                profileName.textContent = data.display_name;
+                profileImage.src = data.images[0]?.url || 'https://via.placeholder.com/150';
+                fetchTopTracks('short_term');
+            })
+            .catch(error => handleError('Error fetching user data: ' + error));
+    }
+
+    // Step 4: Fetch top tracks based on selected time range
+    function fetchTopTracks(timeRange) {
+        if (!accessToken) {
+            handleError('No access token found');
+            return;
+        }
+
+        fetch(`${spotifyConfig.apiEndpoint}/me/top/tracks?time_range=${timeRange}&limit=10`, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                displayTopTracks(data.items);
+                fetchTopGenres(); // optional mock
+            })
+            .catch(error => handleError('Error fetching top tracks: ' + error));
+    }
+
+    // Step 5: Fetch top artists
+    function fetchTopArtists() {
+        if (!accessToken) {
+            handleError('No access token found');
+            return;
+        }
+
+        fetch(`${spotifyConfig.apiEndpoint}/me/top/artists?limit=10`, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                const artistsChart = document.getElementById('artists-chart');
+                artistsChart.innerHTML = '';
+                data.items.forEach(artist => {
+                    const artistElement = document.createElement('div');
+                    artistElement.classList.add('artist');
+                    artistElement.textContent = artist.name;
+                    artistsChart.appendChild(artistElement);
+                });
+                fetchTopGenres();
+            })
+            .catch(error => handleError('Error fetching top artists: ' + error));
+    }
+
+    // Step 6: Display top tracks
+    function displayTopTracks(tracks) {
+        const tracksChart = document.getElementById('tracks-chart');
+        tracksChart.innerHTML = '';
+        tracks.forEach(track => {
+            const trackElement = document.createElement('div');
+            trackElement.classList.add('track');
+            trackElement.textContent = track.name;
+            tracksChart.appendChild(trackElement);
+        });
+        fetchTopArtists();
+    }
+
+    // Step 7: Display top genres (mocked)
+    function fetchTopGenres() {
+        const genres = ['Pop', 'Rock', 'Hip-Hop', 'Jazz', 'Classical'];
+        displayTopGenres(genres);
+    }
+
+    function displayTopGenres(genres) {
+        const genresChart = document.getElementById('genres-chart');
+        genresChart.innerHTML = '';
+        genres.forEach(genre => {
+            const genreElement = document.createElement('div');
+            genreElement.classList.add('genre');
+            genreElement.textContent = genre;
+            genresChart.appendChild(genreElement);
+        });
+        hideLoading();
+    }
+
+    // Helpers
+    function showLoading() {
+        loadingMessage.classList.remove('hidden');
+        dataContainer.classList.add('hidden');
+    }
+
+    function hideLoading() {
+        loadingMessage.classList.add('hidden');
+        dataContainer.classList.remove('hidden');
+    }
+
+    function handleError(message) {
+        errorMessage.textContent = message;
+        errorMessage.classList.remove('hidden');
+        hideLoading();
+    }
+
+    timeRangeSelect.addEventListener('change', (event) => {
+        fetchTopTracks(event.target.value);
+    });
+
+    function generateRandomString(length) {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        for (let i = 0; i < length; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+    }
+
+    async function generateCodeChallenge(codeVerifier) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(codeVerifier);
+        const digest = await window.crypto.subtle.digest('SHA-256', data);
+        return btoa(String.fromCharCode(...new Uint8Array(digest)))
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=+$/, '');
     }
 });
